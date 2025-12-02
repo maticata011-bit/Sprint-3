@@ -1,0 +1,147 @@
+{
+  "historia_usuario": {
+    "id": "HU-006",
+    "titulo": "Consolidación de todas las solicitudes en un reporte histórico",
+    "descripcion": "Como administrador, quiero poder ver y exportar un reporte histórico consolidado de todas las solicitudes, con filtros y opciones de descarga, para realizar análisis y seguimientos.",
+    "estado_inicial": "Por hacer",
+    "flujo_tareas": [
+      {
+        "id": "T-001",
+        "titulo": "Análisis y definición de requerimientos",
+        "descripcion": "Reunión con PO para definir campos, filtros, permisos y formatos de salida del reporte.",
+        "estado": "Por hacer",
+        "responsable": "Product Owner / Analista",
+        "dependencias": [],
+        "criterios_aceptacion": [
+          "Documento de especificaciones firmado",
+          "Lista de campos y filtros definidos"
+        ]
+      },
+      {
+        "id": "T-002",
+        "titulo": "Diseño del reporte y estructura de datos",
+        "descripcion": "Crear mockups y definir la estructura de datos para la consulta histórica consolidada.",
+        "estado": "Por hacer",
+        "responsable": "Diseñador UX / Arquitecto",
+        "dependencias": ["T-001"],
+        "criterios_aceptacion": [
+          "Mockup aprobado en Figma",
+          "Modelo de datos actualizado"
+        ]
+      },
+      {
+        "id": "T-003",
+        "titulo": "Desarrollo Backend: API de consulta histórica",
+        "descripcion": "Crear endpoint REST/GraphQL que consulte y consolide todas las solicitudes históricas con filtros.",
+        "estado": "Por hacer",
+        "responsable": "Backend Developer",
+        "dependencias": ["T-002"],
+        "criterios_aceptacion": [
+          "Endpoint /api/historical-requests funcionando",
+          "Filtros dinámicos implementados",
+          "Paginación y ordenación incluidos"
+        ]
+      },
+      {
+        "id": "T-004",
+        "titulo": "Desarrollo Frontend: Vista de reporte + filtros",
+        "descripcion": "Implementar componente de tabla interactiva con filtros, paginación y ordenación.",
+        "estado": "Por hacer",
+        "responsable": "Frontend Developer",
+        "dependencias": ["T-003"],
+        "criterios_aceptacion": [
+          "Tabla muestra datos reales desde API",
+          "Filtros funcionando correctamente",
+          "Interfaz responsiva y usable"
+        ]
+      },
+      {
+        "id": "T-005",
+        "titulo": "Implementar exportación a PDF/Excel",
+        "descripcion": "Agregar funcionalidad para descargar reporte en formatos PDF y/o Excel.",
+        "estado": "Por hacer",
+        "responsable": "Full Stack Developer",
+        "dependencias": ["T-004"],
+        "criterios_aceptacion": [
+          "Botón de exportación visible",
+          "PDF generado con formato formal",
+          "Excel con todos los datos y filtros aplicados"
+        ]
+      },
+      {
+        "id": "T-006",
+        "titulo": "Configurar permisos y seguridad",
+        "descripcion": "Validar que solo usuarios autorizados (ej: administradores) puedan acceder al reporte.",
+        "estado": "Por hacer",
+        "responsable": "Backend Developer",
+        "dependencias": ["T-003"],
+        "criterios_aceptacion": [
+          "Acceso restringido por roles",
+          "Pruebas de seguridad realizadas"
+        ]
+      },
+      {
+        "id": "T-007",
+        "titulo": "Pruebas integrales con datos reales",
+        "descripcion": "Probar todo el flujo con datos reales, validar rendimiento, filtros y exportaciones.",
+        "estado": "Por hacer",
+        "responsable": "QA Tester",
+        "dependencias": ["T-005", "T-006"],
+        "criterios_aceptacion": [
+          "Reporte funciona con +100 registros",
+          "Filtros, ordenación y exportación OK",
+          "No hay errores en consola"
+        ]
+      },
+      {
+        "id": "T-008",
+        "titulo": "Revisión y validación con PO",
+        "descripcion": "Demo en entorno de staging para aprobación final del producto.",
+        "estado": "Por hacer",
+        "responsable": "Product Owner",
+        "dependencias": ["T-007"],
+        "criterios_aceptacion": [
+          "PO aprueba funcionalidad",
+          "Ajustes menores completados"
+        ]
+      },
+      {
+        "id": "T-009",
+        "titulo": "Despliegue en producción",
+        "descripcion": "Subir cambios a entorno productivo y verificar que todo funcione correctamente.",
+        "estado": "Por hacer",
+        "responsable": "DevOps / Desarrollador",
+        "dependencias": ["T-008"],
+        "criterios_aceptacion": [
+          "Código en rama principal",
+          "Despliegue exitoso sin errores",
+          "Reporte accesible en producción"
+        ]
+      },
+      {
+        "id": "T-010",
+        "titulo": "Documentación y cierre",
+        "descripcion": "Actualizar manual de usuario, documentar API y marcar HU como completada.",
+        "estado": "Por hacer",
+        "responsable": "Technical Writer / Desarrollador",
+        "dependencias": ["T-009"],
+        "criterios_aceptacion": [
+          "Documentación actualizada",
+          "HU cerrada en Jira/Trello",
+          "Changelog actualizado"
+        ]
+      }
+    ],
+    "criterios_aceptacion_globales": [
+      "Reporte muestra todas las solicitudes históricas consolidadas",
+      "Filtros aplicables por fecha, estado, tipo y estudiante",
+      "Exportación a PDF y Excel disponible",
+      "Solo usuarios autorizados pueden acceder",
+      "Interfaz intuitiva y responsiva"
+    ],
+    "prioridad": "Alta",
+    "puntos_de_historia": 8,
+    "epico": "Reportes y Analytics",
+    "sprint_asignado": "Sprint 3"
+  }
+}
