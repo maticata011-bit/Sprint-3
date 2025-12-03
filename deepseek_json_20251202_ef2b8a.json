@@ -2,88 +2,135 @@
   "name": "HU-006 - Consolidación de Solicitudes",
   "nodes": [
     {
-      "id": "webhookEntrada",
-      "name": "Webhook - Fin Proceso",
-      "type": "n8n-nodes-base.webhook",
-      "position": [200, 300],
       "parameters": {
         "httpMethod": "POST",
         "path": "hu006-fin-proceso",
-        "responseMode": "onReceived"
-      }
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b193f7c9-74c1-4aff-9922-7d0877c53131",
+      "name": "Webhook - Fin Proceso",
+      "type": "n8n-nodes-base.webhook",
+      "position": [560, -32],
+      "typeVersion": 2.1,
+      "webhookId": "9a268a26-0c12-4236-bc88-ffae8e2eccfd"
     },
     {
-      "id": "setDatos",
+      "parameters": {
+        "options": {}
+      },
+      "id": "8068cce8-ac59-46f4-b8a4-4685fcbf6f35",
       "name": "Extraer Datos",
       "type": "n8n-nodes-base.set",
-      "position": [450, 300],
-      "parameters": {
-        "keepOnlySet": false,
-        "values": {
-          "string": [
-            {
-              "name": "solicitudId",
-              "value": "={{ $json.solicitudId }}"
-            },
-            {
-              "name": "estadoFinal",
-              "value": "={{ $json.estadoFinal }}"
-            },
-            {
-              "name": "fechaResolucion",
-              "value": "={{ $json.fechaResolucion }}"
-            }
-          ]
-        }
-      }
+      "position": [784, -32],
+      "typeVersion": 3.4
     },
     {
-      "id": "buscarFila",
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mN_J_Y56omIXV-TjtOB4SbJQVYQ3dcTRZbxGK1dmISI",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "f852c1fd-aeec-48b6-a691-6ec85b304893",
       "name": "Buscar fila por ID",
       "type": "n8n-nodes-base.googleSheets",
-      "position": [700, 300],
-      "parameters": {
-        "operation": "lookup",
-        "sheetId": "TU_SHEET_ID",
-        "range": "Historial!A:D",
-        "lookupColumn": "SolicitudID",
-        "lookupValue": "={{ $json.solicitudId }}",
-        "returnAllMatches": false
-      }
-    },
-    {
-      "id": "actualizarFila",
-      "name": "Actualizar Registro",
-      "type": "n8n-nodes-base.googleSheets",
-      "position": [950, 300],
-      "parameters": {
-        "operation": "update",
-        "sheetId": "TU_SHEET_ID",
-        "range": "Historial!A:D",
-        "keyName": "SolicitudID",
-        "keyValue": "={{ $json.solicitudId }}",
-        "dataMode": "manual",
-        "fields": {
-          "values": {
-            "Estado Final": "={{ $json.estadoFinal }}",
-            "Fecha de Resolución": "={{ $json.fechaResolucion }}",
-            "Convalidada": "={{ $json.estadoFinal === 'Convalidada' ? 'Sí' : 'No' }}"
-          }
+      "position": [992, -32],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ADEPMLaUq6PAvD6Q",
+          "name": "Google Sheets account"
         }
       }
     },
     {
-      "id": "respuestaOK",
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1mN_J_Y56omIXV-TjtOB4SbJQVYQ3dcTRZbxGK1dmISI",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "SolicitudID": "={{$json[\"SolicitudID\"]}}",
+            "Fecha de Resolución": "={{$json[\"FechaResolucion\"]}}",
+            "Convalidada": "={{$json[\"Convalidada\"]}}",
+            "EstadoFinal": "={{$json[\"EstadoFinal\"]}}"
+          },
+          "matchingColumns": ["SolicitudID"],
+          "schema": [
+            {
+              "id": "SolicitudID",
+              "displayName": "SolicitudID",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EstadoFinal",
+              "displayName": "EstadoFinal",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de Resolución",
+              "displayName": "Fecha de Resolución",
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Convalidada",
+              "displayName": "Convalidada",
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "730e8ebf-9ae1-4baf-9331-ee4ff994013d",
+      "name": "Actualizar Registro",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [1200, -32],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ADEPMLaUq6PAvD6Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"mensaje\": \"Registro actualizado correctamente\",\n  \"solicitudID\": \"={{$json.SolicitudID}}\",\n  \"estadoFinal\": \"={{$json.EstadoFinal}}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "433d150e-2e20-4512-9a37-d9a53f1e55a8",
       "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
-      "position": [1200, 300],
-      "parameters": {
-        "responseBody": "Solicitud actualizada correctamente"
-      }
+      "position": [1424, -32],
+      "typeVersion": 1.4
     }
   ],
   "connections": {
-    "webhookEntrada": {
+    "Webhook - Fin Proceso": {
       "main": [
         [
           {
@@ -127,5 +174,9 @@
         ]
       ]
     }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
   }
 }
