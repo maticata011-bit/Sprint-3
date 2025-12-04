@@ -1,5 +1,5 @@
 {
-  "name": "HU-006 Recordatorio al alumno",
+  "name": "HU-006 Recordatorio al alumno (Corregido)",
   "nodes": [
     {
       "parameters": {
@@ -11,13 +11,13 @@
           ]
         }
       },
-      "id": "d2d2d900-c9e1-416f-8f27-0f99fa62ec81",
+      "id": "Cron",
       "name": "Cron Diario",
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
       "position": [
-        -944,
-        -464
+        -1220,
+        -620
       ]
     },
     {
@@ -26,18 +26,18 @@
         "range": "Solicitudes!A:H",
         "options": {}
       },
-      "id": "0987cdc1-d3c3-47ef-a515-45799826f082",
+      "id": "Leer",
       "name": "Leer Solicitudes",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
       "position": [
-        -688,
-        -448
+        -1050,
+        -620
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "dJQIqKvVDhemE8sd",
-          "name": "Google Sheets account"
+          "id": "I98ZhPlxdlTh4IVl",
+          "name": "Google Sheets account 2"
         }
       }
     },
@@ -45,26 +45,31 @@
       "parameters": {
         "functionCode": "return items.filter(item => {\n  const estado = item.json.Estado;\n  const fechaEnvio = new Date(item.json.FechaEnvio);\n  const fechaUltima = item.json.FechaUltimaActualizacion ? new Date(item.json.FechaUltimaActualizacion) : null;\n  const recordatorioEnviado = item.json.RecordatorioEnviado;\n\n  const tresDias = 3 * 24 * 60 * 60 * 1000;\n  const vencido = (Date.now() - fechaEnvio.getTime()) >= tresDias;\n  const sinRespuesta = !fechaUltima || fechaUltima < fechaEnvio;\n  const sinRecordatorio = !recordatorioEnviado || recordatorioEnviado === 'No';\n\n  return estado === 'Pendiente' && vencido && sinRespuesta && sinRecordatorio;\n});"
       },
-      "id": "f3f6cfb0-38f2-4b9f-8612-b7d32584f0e0",
+      "id": "Filtro",
       "name": "Filtrar sin respuesta",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        -416,
-        -624
+        -860,
+        -620
       ]
     },
     {
       "parameters": {
-        "operation": "send"
+        "resource": "message",
+        "subject": "=Recordatorio sobre tu solicitud {{$json.SolicitudID}}",
+        "message": "=Estimado/a {{$json.NombreAlumno}},\n\nHan pasado más de 3 días desde que se te envió el correo inicial sobre tu solicitud {{$json.SolicitudID}} y no hemos recibido respuesta.\n\nPor favor, vuelve a enviar la información requerida para continuar con el proceso.\n\nAtentamente,\nUniversidad Andrés Bello",
+        "toList": [
+          "={{ $json.CorreoAlumno }}"
+        ]
       },
-      "id": "555cc2f3-e2ab-4f2f-82b1-9a986b434f02",
+      "id": "Mail",
       "name": "Enviar Recordatorio",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 1,
       "position": [
-        -160,
-        -432
+        -660,
+        -620
       ],
       "credentials": {
         "gmailOAuth2": {
@@ -75,37 +80,62 @@
     },
     {
       "parameters": {
-        "operation": "update",
+        "fields": {
+          "string": [
+            {
+              "name": "RecordatorioEnviado",
+              "value": "Sí"
+            },
+            {
+              "name": "FechaUltimaActualizacion",
+              "value": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "id": "SetNodo",
+      "name": "Marcar Recordatorio Enviado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -450,
+        -620
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
         "sheetId": "1KDwmcRByTHmP0synkiYMWDSq9q4e1SUitGA-ZdYDtQg",
         "range": "Solicitudes!A:H",
         "key": "SolicitudID",
-        "options": {}
+        "options": {
+          "valueInputMode": "RAW",
+          "valueRenderMode": "FORMATTED_VALUE"
+        }
       },
-      "id": "b1ec7380-df08-4169-9092-dc36a3a224f5",
+      "id": "Update",
       "name": "Actualizar Registro",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
       "position": [
-        272,
-        -256
+        -240,
+        -620
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "dJQIqKvVDhemE8sd",
-          "name": "Google Sheets account"
+          "id": "I98ZhPlxdlTh4IVl",
+          "name": "Google Sheets account 2"
         }
       }
     }
   ],
-  "pinData": {},
   "connections": {
     "Cron Diario": {
       "main": [
         [
           {
             "node": "Leer Solicitudes",
-            "type": "main",
-            "index": 0
+            "type": "main"
           }
         ]
       ]
@@ -115,8 +145,7 @@
         [
           {
             "node": "Filtrar sin respuesta",
-            "type": "main",
-            "index": 0
+            "type": "main"
           }
         ]
       ]
@@ -126,8 +155,7 @@
         [
           {
             "node": "Enviar Recordatorio",
-            "type": "main",
-            "index": 0
+            "type": "main"
           }
         ]
       ]
@@ -136,23 +164,22 @@
       "main": [
         [
           {
+            "node": "Marcar Recordatorio Enviado",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Marcar Recordatorio Enviado": {
+      "main": [
+        [
+          {
             "node": "Actualizar Registro",
-            "type": "main",
-            "index": 0
+            "type": "main"
           }
         ]
       ]
     }
   },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "4d7a79e5-4f0b-4a38-8f17-8b14594cbd5f",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "a535375799913c19fbea19edd985ec9c3dfe710968266e6f441cbd4e089f58f2"
-  },
-  "id": "ANS0SyCK7C764kxl",
-  "tags": []
+  "active": true
 }
