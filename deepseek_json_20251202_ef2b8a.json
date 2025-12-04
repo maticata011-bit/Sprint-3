@@ -3,85 +3,101 @@
   "nodes": [
     {
       "parameters": {
-        "triggerTimes": [
-          {
-            "mode": "everyDay",
-            "hour": 8,
-            "minute": 0
-          }
-        ]
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8
+            }
+          ]
+        }
       },
-      "id": "Cron",
+      "id": "d2d2d900-c9e1-416f-8f27-0f99fa62ec81",
       "name": "Cron Diario",
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [200, 300]
+      "position": [
+        -944,
+        -464
+      ]
     },
     {
       "parameters": {
-        "operation": "read",
-        "sheetId": "YOUR_SHEET_ID",
-        "range": "Solicitudes!A:H"
+        "sheetId": "1KDwmcRByTHmP0synkiYMWDSq9q4e1SUitGA-ZdYDtQg",
+        "range": "Solicitudes!A:H",
+        "options": {}
       },
-      "id": "SheetsRead",
+      "id": "0987cdc1-d3c3-47ef-a515-45799826f082",
       "name": "Leer Solicitudes",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
-      "position": [400, 300],
+      "position": [
+        -688,
+        -448
+      ],
       "credentials": {
-        "googleSheetsOAuth2Api": "Google Sheets Credenciales"
+        "googleSheetsOAuth2Api": {
+          "id": "dJQIqKvVDhemE8sd",
+          "name": "Google Sheets account"
+        }
       }
     },
     {
       "parameters": {
         "functionCode": "return items.filter(item => {\n  const estado = item.json.Estado;\n  const fechaEnvio = new Date(item.json.FechaEnvio);\n  const fechaUltima = item.json.FechaUltimaActualizacion ? new Date(item.json.FechaUltimaActualizacion) : null;\n  const recordatorioEnviado = item.json.RecordatorioEnviado;\n\n  const tresDias = 3 * 24 * 60 * 60 * 1000;\n  const vencido = (Date.now() - fechaEnvio.getTime()) >= tresDias;\n  const sinRespuesta = !fechaUltima || fechaUltima < fechaEnvio;\n  const sinRecordatorio = !recordatorioEnviado || recordatorioEnviado === 'No';\n\n  return estado === 'Pendiente' && vencido && sinRespuesta && sinRecordatorio;\n});"
       },
-      "id": "FunctionFilter",
+      "id": "f3f6cfb0-38f2-4b9f-8612-b7d32584f0e0",
       "name": "Filtrar sin respuesta",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [600, 300]
+      "position": [
+        -416,
+        -624
+      ]
     },
     {
       "parameters": {
-        "operation": "send",
-        "toEmail": "={{ $json.CorreoAlumno }}",
-        "subject": "Recordatorio sobre tu solicitud",
-        "text": "Estimado/a {{$json.NombreAlumno}},\n\nHan pasado más de 3 días desde que se te envió el correo inicial sobre tu solicitud {{$json.SolicitudID}} y no hemos recibido respuesta.\n\nPor favor, vuelve a enviar la información requerida para continuar con el proceso.\n\nAtentamente,\nUniversidad Andrés Bello"
+        "operation": "send"
       },
-      "id": "EmailSend",
+      "id": "555cc2f3-e2ab-4f2f-82b1-9a986b434f02",
       "name": "Enviar Recordatorio",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 1,
-      "position": [800, 300],
+      "position": [
+        -160,
+        -432
+      ],
       "credentials": {
-        "gmailOAuth2Api": "Gmail Credenciales"
+        "gmailOAuth2": {
+          "id": "UdmNvmlXoxZg8q4k",
+          "name": "Gmail account"
+        }
       }
     },
     {
       "parameters": {
         "operation": "update",
-        "sheetId": "YOUR_SHEET_ID",
+        "sheetId": "1KDwmcRByTHmP0synkiYMWDSq9q4e1SUitGA-ZdYDtQg",
         "range": "Solicitudes!A:H",
         "key": "SolicitudID",
-        "valueInputMode": "USER_ENTERED",
-        "options": {},
-        "updateAllMatches": false,
-        "fields": {
-          "FechaRecordatorio": "={{ new Date().toISOString().slice(0,10) }}",
-          "RecordatorioEnviado": "Sí"
-        }
+        "options": {}
       },
-      "id": "SheetsUpdate",
+      "id": "b1ec7380-df08-4169-9092-dc36a3a224f5",
       "name": "Actualizar Registro",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
-      "position": [1000, 300],
+      "position": [
+        272,
+        -256
+      ],
       "credentials": {
-        "googleSheetsOAuth2Api": "Google Sheets Credenciales"
+        "googleSheetsOAuth2Api": {
+          "id": "dJQIqKvVDhemE8sd",
+          "name": "Google Sheets account"
+        }
       }
     }
   ],
+  "pinData": {},
   "connections": {
     "Cron Diario": {
       "main": [
@@ -127,5 +143,16 @@
         ]
       ]
     }
-  }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4d7a79e5-4f0b-4a38-8f17-8b14594cbd5f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a535375799913c19fbea19edd985ec9c3dfe710968266e6f441cbd4e089f58f2"
+  },
+  "id": "ANS0SyCK7C764kxl",
+  "tags": []
 }
