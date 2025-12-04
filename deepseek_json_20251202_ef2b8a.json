@@ -1,158 +1,122 @@
 {
-  "name": "HU-006 - Consolidación de Solicitudes",
+  "name": "HU-006 Recordatorio al alumno",
   "nodes": [
     {
       "parameters": {
-        "httpMethod": "POST",
-        "path": "hu006-fin-proceso",
-        "responseMode": "responseNode",
-        "options": {}
+        "triggerTimes": [
+          {
+            "mode": "everyDay",
+            "hour": 8,
+            "minute": 0
+          }
+        ]
       },
-      "id": "b193f7c9-74c1-4aff-9922-7d0877c53131",
-      "name": "Webhook - Fin Proceso",
-      "type": "n8n-nodes-base.webhook",
-      "position": [560, -32],
-      "typeVersion": 2.1,
-      "webhookId": "9a268a26-0c12-4236-bc88-ffae8e2eccfd"
+      "id": "Cron",
+      "name": "Cron Diario",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300]
     },
     {
       "parameters": {
-        "options": {}
+        "operation": "read",
+        "sheetId": "YOUR_SHEET_ID",
+        "range": "Solicitudes!A:H"
       },
-      "id": "8068cce8-ac59-46f4-b8a4-4685fcbf6f35",
-      "name": "Extraer Datos",
-      "type": "n8n-nodes-base.set",
-      "position": [784, -32],
-      "typeVersion": 3.4
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1mN_J_Y56omIXV-TjtOB4SbJQVYQ3dcTRZbxGK1dmISI",
-          "mode": "list"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list"
-        },
-        "options": {}
-      },
-      "id": "f852c1fd-aeec-48b6-a691-6ec85b304893",
-      "name": "Buscar fila por ID",
+      "id": "SheetsRead",
+      "name": "Leer Solicitudes",
       "type": "n8n-nodes-base.googleSheets",
-      "position": [992, -32],
-      "typeVersion": 4.7,
+      "typeVersion": 2,
+      "position": [400, 300],
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "ADEPMLaUq6PAvD6Q",
-          "name": "Google Sheets account"
-        }
+        "googleSheetsOAuth2Api": "Google Sheets Credenciales"
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.filter(item => {\n  const estado = item.json.Estado;\n  const fechaEnvio = new Date(item.json.FechaEnvio);\n  const fechaUltima = item.json.FechaUltimaActualizacion ? new Date(item.json.FechaUltimaActualizacion) : null;\n  const recordatorioEnviado = item.json.RecordatorioEnviado;\n\n  const tresDias = 3 * 24 * 60 * 60 * 1000;\n  const vencido = (Date.now() - fechaEnvio.getTime()) >= tresDias;\n  const sinRespuesta = !fechaUltima || fechaUltima < fechaEnvio;\n  const sinRecordatorio = !recordatorioEnviado || recordatorioEnviado === 'No';\n\n  return estado === 'Pendiente' && vencido && sinRespuesta && sinRecordatorio;\n});"
+      },
+      "id": "FunctionFilter",
+      "name": "Filtrar sin respuesta",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "toEmail": "={{ $json.CorreoAlumno }}",
+        "subject": "Recordatorio sobre tu solicitud",
+        "text": "Estimado/a {{$json.NombreAlumno}},\n\nHan pasado más de 3 días desde que se te envió el correo inicial sobre tu solicitud {{$json.SolicitudID}} y no hemos recibido respuesta.\n\nPor favor, vuelve a enviar la información requerida para continuar con el proceso.\n\nAtentamente,\nUniversidad Andrés Bello"
+      },
+      "id": "EmailSend",
+      "name": "Enviar Recordatorio",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "credentials": {
+        "gmailOAuth2Api": "Gmail Credenciales"
       }
     },
     {
       "parameters": {
         "operation": "update",
-        "documentId": {
-          "__rl": true,
-          "value": "1mN_J_Y56omIXV-TjtOB4SbJQVYQ3dcTRZbxGK1dmISI",
-          "mode": "list"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "SolicitudID": "={{$json[\"SolicitudID\"]}}",
-            "Fecha de Resolución": "={{$json[\"FechaResolucion\"]}}",
-            "Convalidada": "={{$json[\"Convalidada\"]}}",
-            "EstadoFinal": "={{$json[\"EstadoFinal\"]}}"
-          },
-          "matchingColumns": ["SolicitudID"],
-          "schema": [
-            {
-              "id": "SolicitudID",
-              "displayName": "SolicitudID",
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "EstadoFinal",
-              "displayName": "EstadoFinal",
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Fecha de Resolución",
-              "displayName": "Fecha de Resolución",
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Convalidada",
-              "displayName": "Convalidada",
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ]
-        },
-        "options": {}
+        "sheetId": "YOUR_SHEET_ID",
+        "range": "Solicitudes!A:H",
+        "key": "SolicitudID",
+        "valueInputMode": "USER_ENTERED",
+        "options": {},
+        "updateAllMatches": false,
+        "fields": {
+          "FechaRecordatorio": "={{ new Date().toISOString().slice(0,10) }}",
+          "RecordatorioEnviado": "Sí"
+        }
       },
-      "id": "730e8ebf-9ae1-4baf-9331-ee4ff994013d",
+      "id": "SheetsUpdate",
       "name": "Actualizar Registro",
       "type": "n8n-nodes-base.googleSheets",
-      "position": [1200, -32],
-      "typeVersion": 4.7,
+      "typeVersion": 2,
+      "position": [1000, 300],
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "ADEPMLaUq6PAvD6Q",
-          "name": "Google Sheets account"
-        }
+        "googleSheetsOAuth2Api": "Google Sheets Credenciales"
       }
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"mensaje\": \"Registro actualizado correctamente\",\n  \"solicitudID\": \"={{$json.SolicitudID}}\",\n  \"estadoFinal\": \"={{$json.EstadoFinal}}\"\n}",
-        "options": {
-          "responseCode": 200
-        }
-      },
-      "id": "433d150e-2e20-4512-9a37-d9a53f1e55a8",
-      "name": "Responder",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "position": [1424, -32],
-      "typeVersion": 1.4
     }
   ],
   "connections": {
-    "Webhook - Fin Proceso": {
+    "Cron Diario": {
       "main": [
         [
           {
-            "node": "Extraer Datos",
+            "node": "Leer Solicitudes",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extraer Datos": {
+    "Leer Solicitudes": {
       "main": [
         [
           {
-            "node": "Buscar fila por ID",
+            "node": "Filtrar sin respuesta",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Buscar fila por ID": {
+    "Filtrar sin respuesta": {
+      "main": [
+        [
+          {
+            "node": "Enviar Recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Recordatorio": {
       "main": [
         [
           {
@@ -162,21 +126,6 @@
           }
         ]
       ]
-    },
-    "Actualizar Registro": {
-      "main": [
-        [
-          {
-            "node": "Responder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
   }
 }
