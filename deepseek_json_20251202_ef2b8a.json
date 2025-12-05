@@ -1,5 +1,5 @@
 {
-  "name": "HU-006 Recordatorio al alumno prueba",
+  "name": "HU-006 Recordatorio al alumno Listo",
   "nodes": [
     {
       "parameters": {
@@ -11,11 +11,14 @@
           ]
         }
       },
-      "id": "4ea7938a-f208-47ba-9a91-1fccaa2e14c1",
+      "id": "b6d19314-4332-4b31-a109-84770f27856d",
       "name": "Cron Diario",
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [-416, -400]
+      "position": [
+        -672,
+        -176
+      ]
     },
     {
       "parameters": {
@@ -23,11 +26,14 @@
         "range": "Solicitudes!A:H",
         "options": {}
       },
-      "id": "22adfee8-9371-4b7b-b981-09a55f004b31",
+      "id": "1262892e-36c7-4ccc-b028-23ff9e13677c",
       "name": "Leer Solicitudes",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
-      "position": [-256, -400],
+      "position": [
+        -512,
+        -176
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "I98ZhPlxdlTh4IVl",
@@ -37,27 +43,35 @@
     },
     {
       "parameters": {
-        "functionCode": "return items.filter(item => {\n  const estado = item.json.Estado;\n  const fechaEnvio = new Date(item.json.FechaEnvio);\n  const fechaUltima = item.json.FechaUltimaActualizacion ? new Date(item.json.FechaUltimaActualizacion) : null;\n  const recordatorioEnviado = item.json.RecordatorioEnviado;\n\n  const tresDias = 3 * 24 * 60 * 60 * 1000;\n  const vencido = (Date.now() - fechaEnvio.getTime()) >= tresDias;\n  const sinRespuesta = !fechaUltima || fechaUltima < fechaEnvio;\n  const sinRecordatorio = !recordatorioEnviado || recordatorioEnviado === 'No';\n\n  return estado === 'Pendiente' && vencido && sinRespuesta && sinRecordatorio;\n});"
+        "functionCode": "return items.filter(item => {\n  const estado = item.json.Estado;\n\n  // Convertir FechaEnvio desde número Excel si es necesario\n  let fechaEnvio;\n  if (typeof item.json.FechaEnvio === 'number') {\n    fechaEnvio = new Date(Date.UTC(1900, 0, item.json.FechaEnvio - 1));\n  } else if (typeof item.json.FechaEnvio === 'string' && item.json.FechaEnvio.includes('-')) {\n    const [dia, mes, año] = item.json.FechaEnvio.split('-');\n    fechaEnvio = new Date(`${año}-${mes}-${dia}`);\n  } else {\n    return false;\n  }\n\n  // Convertir FechaUltimaActualizacion si existe\n  let fechaUltima = null;\n  if (typeof item.json.FechaUltimaActualizacion === 'number') {\n    fechaUltima = new Date(Date.UTC(1900, 0, item.json.FechaUltimaActualizacion - 1));\n  } else if (typeof item.json.FechaUltimaActualizacion === 'string' && item.json.FechaUltimaActualizacion.includes('-')) {\n    const [diaU, mesU, añoU] = item.json.FechaUltimaActualizacion.split('-');\n    fechaUltima = new Date(`${añoU}-${mesU}-${diaU}`);\n  }\n\n  const recordatorioEnviado = (item.json.RecordatorioEnviado || '').toLowerCase().trim();\n  const sinRecordatorio = recordatorioEnviado === '' || recordatorioEnviado === 'no';\n\n  const tresDias = 3 * 24 * 60 * 60 * 1000;\n  const vencido = (Date.now() - fechaEnvio.getTime()) >= tresDias;\n  const sinRespuesta = !fechaUltima || fechaUltima < fechaEnvio;\n\n  return estado === 'Pendiente' && vencido && sinRespuesta && sinRecordatorio;\n});\n"
       },
-      "id": "a327dd79-8585-4712-9dbd-d37827d21f6c",
+      "id": "077cadd0-e9ba-4fc3-999d-476eb0617624",
       "name": "Filtrar sin respuesta",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [-80, -400]
+      "position": [
+        -368,
+        -176
+      ]
     },
     {
       "parameters": {
         "resource": "message",
         "subject": "=Recordatorio sobre tu solicitud {{$json.SolicitudID}}",
         "message": "=Estimado/a {{$json.NombreAlumno}},\n\nHan pasado más de 3 días desde que se te envió el correo inicial sobre tu solicitud {{$json.SolicitudID}} y no hemos recibido respuesta.\n\nPor favor, vuelve a enviar la información requerida para continuar con el proceso.\n\nAtentamente,\nUniversidad Andrés Bello",
-        "toList": ["={{ $json.CorreoAlumno }}"],
+        "toList": [
+          "={{ $json.CorreoAlumno }}"
+        ],
         "additionalFields": {}
       },
-      "id": "5a5ee4a7-30ee-46af-987f-4c8e172db1f7",
+      "id": "131384e4-2725-4412-9d65-200fed15a813",
       "name": "Enviar Recordatorio",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 1,
-      "position": [80, -400],
+      "position": [
+        -192,
+        -176
+      ],
       "credentials": {
         "gmailOAuth2": {
           "id": "UdmNvmlXoxZg8q4k",
@@ -71,7 +85,7 @@
           "string": [
             {
               "name": "SolicitudID",
-              "value": "={{ $json.SolicitudID }}"
+              "value": "Test-003"
             },
             {
               "name": "RecordatorioEnviado",
@@ -79,7 +93,11 @@
             },
             {
               "name": "FechaUltimaActualizacion",
-              "value": "={{ $now }}"
+              "value": "={{ new Date().toISOString().split('T')[0] }}"
+            },
+            {
+              "name": "FechaRecordatorio",
+              "value": "={{ new Date().toISOString().split('T')[0] }}"
             }
           ]
         },
@@ -87,15 +105,18 @@
           "dotNotation": false
         }
       },
-      "id": "d379883d-1682-4ca9-8769-fa1285eb0a93",
+      "id": "6a7ec2df-187f-4293-9964-8eb0660d9563",
       "name": "Marcar Recordatorio Enviado",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [240, -400]
+      "position": [
+        -16,
+        -176
+      ]
     },
     {
       "parameters": {
-        "operation": "upsert",
+        "operation": "update",
         "sheetId": "1KDwmcRByTHmP0synkiYMWDSq9q4e1SUitGA-ZdYDtQg",
         "range": "Solicitudes!A:H",
         "key": "SolicitudID",
@@ -104,11 +125,14 @@
           "valueRenderMode": "FORMATTED_VALUE"
         }
       },
-      "id": "ebc6e255-eded-429e-acfb-13abcc6d1707",
+      "id": "d7514d5b-b181-4029-9ee9-5b7df91157fe",
       "name": "Actualizar Registro",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
-      "position": [416, -400],
+      "position": [
+        144,
+        -176
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "I98ZhPlxdlTh4IVl",
@@ -117,6 +141,7 @@
       }
     }
   ],
+  "pinData": {},
   "connections": {
     "Cron Diario": {
       "main": [
@@ -178,7 +203,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "19790c3d-8d33-40ec-a212-99dff569961b",
-  "id": "F1q8w52OUQW0shvM",
+  "versionId": "064d5068-0ce0-4333-9890-a3fc173aa74d",
+  "meta": {
+    "instanceId": "a535375799913c19fbea19edd985ec9c3dfe710968266e6f441cbd4e089f58f2"
+  },
+  "id": "zh8np4xLZFyPZGT6",
   "tags": []
 }
