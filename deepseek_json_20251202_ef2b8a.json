@@ -1,212 +1,37 @@
 {
-  "name": "HU-006 Recordatorio al alumno Listo",
-  "nodes": [
+  "HU": "HU-006",
+  "titulo": "Formulario de captura de motivo de rechazo",
+  "rol": "Director de Carrera",
+  "necesidad": "Ingresar un motivo detallado al rechazar una solicitud",
+  "beneficio": "Que el estudiante conozca las razones específicas del rechazo",
+  "sprint": "Sprint 3",
+  "criteriosAceptacion": [
     {
-      "parameters": {
-        "triggerTimes": {
-          "item": [
-            {
-              "hour": 8
-            }
-          ]
-        }
-      },
-      "id": "b6d19314-4332-4b31-a109-84770f27856d",
-      "name": "Cron Diario",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [
-        -672,
-        -176
-      ]
+      "escenario": "Captura de motivo de rechazo",
+      "dado": "El director selecciona 'Rechazar' una solicitud",
+      "cuando": "Se muestra el formulario de rechazo",
+      "entonces": "El director debe poder ingresar un texto explicando el motivo"
     },
     {
-      "parameters": {
-        "sheetId": "1KDwmcRByTHmP0synkiYMWDSq9q4e1SUitGA-ZdYDtQg",
-        "range": "Solicitudes!A:H",
-        "options": {}
-      },
-      "id": "1262892e-36c7-4ccc-b028-23ff9e13677c",
-      "name": "Leer Solicitudes",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 2,
-      "position": [
-        -512,
-        -176
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "I98ZhPlxdlTh4IVl",
-          "name": "Google Sheets account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "functionCode": "return items.filter(item => {\n  const estado = item.json.Estado;\n\n  // Convertir FechaEnvio desde número Excel si es necesario\n  let fechaEnvio;\n  if (typeof item.json.FechaEnvio === 'number') {\n    fechaEnvio = new Date(Date.UTC(1900, 0, item.json.FechaEnvio - 1));\n  } else if (typeof item.json.FechaEnvio === 'string' && item.json.FechaEnvio.includes('-')) {\n    const [dia, mes, año] = item.json.FechaEnvio.split('-');\n    fechaEnvio = new Date(`${año}-${mes}-${dia}`);\n  } else {\n    return false;\n  }\n\n  // Convertir FechaUltimaActualizacion si existe\n  let fechaUltima = null;\n  if (typeof item.json.FechaUltimaActualizacion === 'number') {\n    fechaUltima = new Date(Date.UTC(1900, 0, item.json.FechaUltimaActualizacion - 1));\n  } else if (typeof item.json.FechaUltimaActualizacion === 'string' && item.json.FechaUltimaActualizacion.includes('-')) {\n    const [diaU, mesU, añoU] = item.json.FechaUltimaActualizacion.split('-');\n    fechaUltima = new Date(`${añoU}-${mesU}-${diaU}`);\n  }\n\n  const recordatorioEnviado = (item.json.RecordatorioEnviado || '').toLowerCase().trim();\n  const sinRecordatorio = recordatorioEnviado === '' || recordatorioEnviado === 'no';\n\n  const tresDias = 3 * 24 * 60 * 60 * 1000;\n  const vencido = (Date.now() - fechaEnvio.getTime()) >= tresDias;\n  const sinRespuesta = !fechaUltima || fechaUltima < fechaEnvio;\n\n  return estado === 'Pendiente' && vencido && sinRespuesta && sinRecordatorio;\n});\n"
-      },
-      "id": "077cadd0-e9ba-4fc3-999d-476eb0617624",
-      "name": "Filtrar sin respuesta",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        -368,
-        -176
-      ]
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "subject": "=Recordatorio sobre tu solicitud {{$json.SolicitudID}}",
-        "message": "=Estimado/a {{$json.NombreAlumno}},\n\nHan pasado más de 3 días desde que se te envió el correo inicial sobre tu solicitud {{$json.SolicitudID}} y no hemos recibido respuesta.\n\nPor favor, vuelve a enviar la información requerida para continuar con el proceso.\n\nAtentamente,\nUniversidad Andrés Bello",
-        "toList": [
-          "={{ $json.CorreoAlumno }}"
-        ],
-        "additionalFields": {}
-      },
-      "id": "131384e4-2725-4412-9d65-200fed15a813",
-      "name": "Enviar Recordatorio",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 1,
-      "position": [
-        -192,
-        -176
-      ],
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "UdmNvmlXoxZg8q4k",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "SolicitudID",
-              "value": "Test-003"
-            },
-            {
-              "name": "RecordatorioEnviado",
-              "value": "Si"
-            },
-            {
-              "name": "FechaUltimaActualizacion",
-              "value": "={{ new Date().toISOString().split('T')[0] }}"
-            },
-            {
-              "name": "FechaRecordatorio",
-              "value": "={{ new Date().toISOString().split('T')[0] }}"
-            }
-          ]
-        },
-        "options": {
-          "dotNotation": false
-        }
-      },
-      "id": "6a7ec2df-187f-4293-9964-8eb0660d9563",
-      "name": "Marcar Recordatorio Enviado",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [
-        -16,
-        -176
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "sheetId": "1KDwmcRByTHmP0synkiYMWDSq9q4e1SUitGA-ZdYDtQg",
-        "range": "Solicitudes!A:H",
-        "key": "SolicitudID",
-        "options": {
-          "valueInputMode": "RAW",
-          "valueRenderMode": "FORMATTED_VALUE"
-        }
-      },
-      "id": "d7514d5b-b181-4029-9ee9-5b7df91157fe",
-      "name": "Actualizar Registro",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 2,
-      "position": [
-        144,
-        -176
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "I98ZhPlxdlTh4IVl",
-          "name": "Google Sheets account 2"
-        }
-      }
+      "escenario": "Motivo almacenado en el sistema",
+      "dado": "El director ingresa un motivo de rechazo",
+      "cuando": "Confirma el rechazo",
+      "entonces": "El motivo debe quedar registrado en Google Sheets en el campo 'motivoRechazo'"
     }
   ],
-  "pinData": {},
-  "connections": {
-    "Cron Diario": {
-      "main": [
-        [
-          {
-            "node": "Leer Solicitudes",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leer Solicitudes": {
-      "main": [
-        [
-          {
-            "node": "Filtrar sin respuesta",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filtrar sin respuesta": {
-      "main": [
-        [
-          {
-            "node": "Enviar Recordatorio",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Enviar Recordatorio": {
-      "main": [
-        [
-          {
-            "node": "Marcar Recordatorio Enviado",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Marcar Recordatorio Enviado": {
-      "main": [
-        [
-          {
-            "node": "Actualizar Registro",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "064d5068-0ce0-4333-9890-a3fc173aa74d",
-  "meta": {
-    "instanceId": "a535375799913c19fbea19edd985ec9c3dfe710968266e6f441cbd4e089f58f2"
-  },
-  "id": "zh8np4xLZFyPZGT6",
-  "tags": []
+  "camposGoogleSheets": [
+    "SolicitudID",
+    "motivoRechazo",
+    "estadoSolicitud",
+    "fechaRechazo"
+  ],
+  "accionesFlujo": [
+    "Detectar acción de rechazo",
+    "Mostrar formulario de motivo",
+    "Validar que el motivo no esté vacío",
+    "Registrar motivo en Google Sheets",
+    "Enviar correo de rechazo al estudiante",
+    "Actualizar fecha de rechazo",
+    "Cambiar estado de la solicitud a 'Rechazada'"
+  ]
 }
