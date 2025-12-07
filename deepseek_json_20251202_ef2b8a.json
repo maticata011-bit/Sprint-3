@@ -1,33 +1,50 @@
 {
-  "name": "HU-006 - Formulario motivo de rechazo",
+  "name": "HU-006 - Solicitud (Aprobada/Rechazada)",
   "nodes": [
     {
       "id": "1",
-      "name": "Webhook - Rechazo solicitud",
+      "name": "Webhook - Solicitud",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [250, 300],
       "parameters": {
-        "path": "rechazo-solicitud",
+        "path": "solicitud",
         "httpMethod": "POST",
         "responseMode": "onReceived",
         "responseData": {
-          "responseBody": "Solicitud de rechazo recibida"
+          "responseBody": "Solicitud recibida"
         }
       }
     },
     {
       "id": "2",
-      "name": "IF - Validar motivo",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "name": "Set - Normalizar datos",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
       "position": [500, 300],
       "parameters": {
-        "conditions": {
+        "keepOnlySet": true,
+        "values": {
           "string": [
             {
-              "value1": "={{$json[\"motivoRechazo\"]}}",
-              "operation": "notEmpty"
+              "name": "SolicitudID",
+              "value": "={{$json[\"body\"][\"SolicitudID\"]}}"
+            },
+            {
+              "name": "motivoRechazo",
+              "value": "={{$json[\"body\"][\"motivoRechazo\"]}}"
+            },
+            {
+              "name": "estadoSolicitud",
+              "value": "={{$json[\"body\"][\"estadoSolicitud\"]}}"
+            },
+            {
+              "name": "fechaRechazo",
+              "value": "={{$now}}"
+            },
+            {
+              "name": "correoEstudiante",
+              "value": "={{$json[\"body\"][\"correoEstudiante\"]}}"
             }
           ]
         }
@@ -37,19 +54,19 @@
       "id": "3",
       "name": "Google Sheets - Actualizar fila",
       "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 1,
+      "typeVersion": 3,
       "position": [750, 200],
       "parameters": {
         "authentication": "oAuth2",
         "operation": "update",
-        "sheetId": "TU_SHEET_ID",
-        "range": "Solicitudes!A:D",
+        "sheetId": "TU_SPREADSHEET_ID",
+        "range": "Solicitudes",
         "key": "SolicitudID",
         "keyValue": "={{$json[\"SolicitudID\"]}}",
         "updateFields": {
           "motivoRechazo": "={{$json[\"motivoRechazo\"]}}",
-          "estadoSolicitud": "Rechazada",
-          "fechaRechazo": "={{$now}}"
+          "estadoSolicitud": "={{$json[\"estadoSolicitud\"]}}",
+          "fechaRechazo": "={{$json[\"fechaRechazo\"]}}"
         }
       },
       "credentials": {
@@ -68,38 +85,36 @@
       "parameters": {
         "toEmail": "={{$json[\"correoEstudiante\"]}}",
         "subject": "Resultado de tu solicitud",
-        "text": "Tu solicitud ha sido rechazada. Motivo: {{$json[\"motivoRechazo\"]}}"
+        "text": "=Estimado/a estudiante,\\n\\nJunto con saludar, te informamos que tu solicitud ha sido revisada por el equipo correspondiente. El resultado es el siguiente:\\n\\nEstado: {{$json[\"estadoSolicitud\"]}}\\nMotivo: {{$json[\"motivoRechazo\"]}}\\n\\nTe invitamos a revisar los requisitos y condiciones establecidos, y a realizar una nueva solicitud si corresponde.\\n\\nAgradecemos tu interés y comprensión.\\n\\nAtentamente,\\nUniversidad Andrés Bello"
       },
       "credentials": {
         "smtp": {
           "id": "TU_CREDENCIAL_SMTP",
-          "name": "SMTP UNAB"
+          "name": "SMTP Gmail"
         }
       }
     }
   ],
   "connections": {
-    "Webhook - Rechazo solicitud": {
+    "Webhook - Solicitud": {
       "main": [
         [
           {
-            "node": "IF - Validar motivo",
+            "node": "Set - Normalizar datos",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "IF - Validar motivo": {
+    "Set - Normalizar datos": {
       "main": [
         [
           {
             "node": "Google Sheets - Actualizar fila",
             "type": "main",
             "index": 0
-          }
-        ],
-        [
+          },
           {
             "node": "Email - Notificar estudiante",
             "type": "main",
