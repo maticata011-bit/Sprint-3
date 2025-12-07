@@ -2,26 +2,22 @@
   "name": "HU-006 - Solicitud (Aprobada/Rechazada)",
   "nodes": [
     {
-      "id": "1",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "solicitud",
+        "options": {}
+      },
+      "id": "b83bf63d-2015-4b2f-be3e-086c0447d12c",
       "name": "Webhook - Solicitud",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [250, 300],
-      "parameters": {
-        "path": "solicitud",
-        "httpMethod": "POST",
-        "responseMode": "onReceived",
-        "responseData": {
-          "responseBody": "Solicitud recibida"
-        }
-      }
+      "position": [
+        -1408,
+        224
+      ],
+      "webhookId": "9a2a0878-3ad4-4b64-aef8-94cf17033cba"
     },
     {
-      "id": "2",
-      "name": "Set - Normalizar datos",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [500, 300],
       "parameters": {
         "keepOnlySet": true,
         "values": {
@@ -47,54 +43,95 @@
               "value": "={{$json[\"body\"][\"correoEstudiante\"]}}"
             }
           ]
-        }
-      }
+        },
+        "options": {}
+      },
+      "id": "b1275e07-1fcd-48a9-9b61-a23cb883984f",
+      "name": "Set - Normalizar datos",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        224
+      ]
     },
     {
-      "id": "3",
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1jJKBG6lYPMH5So46EQOjrQxiDwsAZ32sGzlUxxbTUlA",
+          "mode": "list",
+          "cachedResultName": "HU-006 Formulario motivo rechazo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jJKBG6lYPMH5So46EQOjrQxiDwsAZ32sGzlUxxbTUlA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Solicitudes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jJKBG6lYPMH5So46EQOjrQxiDwsAZ32sGzlUxxbTUlA/edit#gid=0"
+        },
+        "columnToMatchOn": "SolicitudID",
+        "valueToMatchOn": "={{$json[\"SolicitudID\"]}}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "motivoRechazo",
+              "fieldValue": "={{$json[\"motivoRechazo\"]}}"
+            },
+            {
+              "column": "estadoSolicitud",
+              "fieldValue": "={{$json[\"estadoSolicitud\"]}}"
+            },
+            {
+              "column": "fechaRechazo",
+              "fieldValue": "={{$now.toFormat(\"dd-MM-yyyy\")}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3690053d-e3e0-4e0f-b7a4-5e97bebeead5",
       "name": "Google Sheets - Actualizar fila",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 3,
-      "position": [750, 200],
-      "parameters": {
-        "authentication": "oAuth2",
-        "operation": "update",
-        "sheetId": "TU_SPREADSHEET_ID",
-        "range": "Solicitudes",
-        "key": "SolicitudID",
-        "keyValue": "={{$json[\"SolicitudID\"]}}",
-        "updateFields": {
-          "motivoRechazo": "={{$json[\"motivoRechazo\"]}}",
-          "estadoSolicitud": "={{$json[\"estadoSolicitud\"]}}",
-          "fechaRechazo": "={{$json[\"fechaRechazo\"]}}"
-        }
-      },
+      "position": [
+        -1024,
+        224
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "TU_CREDENCIAL_OAUTH",
-          "name": "Google Sheets OAuth"
+          "id": "I98ZhPlxdlTh4IVl",
+          "name": "Google Sheets account 2"
         }
       }
     },
     {
-      "id": "4",
+      "parameters": {
+        "fromEmail": "maticata011@gmail.com",
+        "toEmail": "={{$json[\"correoEstudiante\"]}}",
+        "subject": "Resultado de tu solicitud",
+        "text": "=Estimado/a estudiante,\n\nJunto con saludar, te informamos que tu solicitud ha sido revisada por el equipo correspondiente. El resultado es el siguiente:\n\nEstado: {{$json[\"estadoSolicitud\"]}}\nMotivo: {{$json[\"motivoRechazo\"]}}\n\nTe invitamos a revisar los requisitos y condiciones establecidos, y a realizar una nueva solicitud si corresponde.\n\nAgradecemos tu interés y comprensión.\n\nAtentamente,\nUniversidad Andrés Bello\n",
+        "options": {}
+      },
+      "id": "166c6bba-29e6-4cf1-9f2c-d943a4e6494c",
       "name": "Email - Notificar estudiante",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 1,
-      "position": [750, 400],
-      "parameters": {
-        "toEmail": "={{$json[\"correoEstudiante\"]}}",
-        "subject": "Resultado de tu solicitud",
-        "text": "=Estimado/a estudiante,\\n\\nJunto con saludar, te informamos que tu solicitud ha sido revisada por el equipo correspondiente. El resultado es el siguiente:\\n\\nEstado: {{$json[\"estadoSolicitud\"]}}\\nMotivo: {{$json[\"motivoRechazo\"]}}\\n\\nTe invitamos a revisar los requisitos y condiciones establecidos, y a realizar una nueva solicitud si corresponde.\\n\\nAgradecemos tu interés y comprensión.\\n\\nAtentamente,\\nUniversidad Andrés Bello"
-      },
+      "position": [
+        -816,
+        224
+      ],
       "credentials": {
         "smtp": {
-          "id": "TU_CREDENCIAL_SMTP",
-          "name": "SMTP Gmail"
+          "id": "pOnmGf1OSrSrcHCj",
+          "name": "SMTP account"
         }
       }
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook - Solicitud": {
       "main": [
@@ -114,7 +151,13 @@
             "node": "Google Sheets - Actualizar fila",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Actualizar fila": {
+      "main": [
+        [
           {
             "node": "Email - Notificar estudiante",
             "type": "main",
@@ -124,7 +167,15 @@
       ]
     }
   },
-  "active": false,
-  "settings": {},
-  "version": 1
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "14c9d48d-2cf6-4884-985e-32c522dc87ff",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a535375799913c19fbea19edd985ec9c3dfe710968266e6f441cbd4e089f58f2"
+  },
+  "id": "z7oVZgWbEhHip2ph",
+  "tags": []
 }
